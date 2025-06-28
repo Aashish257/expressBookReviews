@@ -5,50 +5,75 @@ let users = require("./auth_users.js").users;
 const public_users = express.Router();
 const axios = require('axios');
 
-
-function getAllBooks() {
-  axios.get('http://localhost:3000/')
-    .then(response => {
-      console.log("Task 10: All books:");
-      console.log(response.data);
-    })
-    .catch(error => {
-      console.error("Error fetching all books:", error.message);
+// Task 10
+public_users.get('/books', function (req, res) {
+    const get_books = new Promise((resolve, reject) => {
+        resolve(res.send(JSON.stringify(books, null, 4)));
     });
-}
+
+    get_books.then(() => console.log("Promise for Task 10 resolved"));
+});
 
 
-async function getBookByISBN(isbn) {
-  try {
-    const response = await axios.get(`http://localhost:3000/isbn/${isbn}`);
-    console.log(`Task 11: Book details for ISBN ${isbn}:`);
-    console.log(response.data);
-  } catch (error) {
-    console.error(`Error fetching book by ISBN ${isbn}:`, error.message);
-  }
-}
-
-
-function getBooksByAuthor(author) {
-  axios.get(`http://localhost:3000/author/${author}`)
-    .then(response => {
-      console.log(`Task 12: Books by author ${author}:`);
-      console.log(response.data);
-    })
-    .catch(error => {
-      console.error(`Error fetching books by author ${author}:`, error.message);
+// Task 11
+public_users.get('/books/isbn/:isbn', function (req, res) {
+    const isbn = req.params.isbn;
+    const get_book_by_isbn = new Promise((resolve, reject) => {
+        const book = books[isbn];
+        if (book) {
+            resolve(res.send(JSON.stringify(book, null, 4)));
+        } else {
+            reject(res.status(404).json({ message: "Book not found for this ISBN." }));
+        }
     });
-}
 
-async function getBooksByTitle(title) {
-  try {
-    const response = await axios.get(`http://localhost:3000/title/${title}`);
-    console.log(`Task 13: Books with title ${title}:`);
-    console.log(response.data);
-  } catch (error) {
-    console.error(`Error fetching books by title ${title}:`, error.message);
-  }
-}
+    get_book_by_isbn.then(() => 
+        console.log(`Promise for Task 11 resolved for ISBN ${isbn}`)
+    );
+});
+
+
+// Task 12
+public_users.get('/books/author/:author', function (req, res) {
+    const author = req.params.author;
+    const get_books_by_author = new Promise((resolve, reject) => {
+        const matchingBooks = Object.values(books).filter(book => 
+            book.author.toLowerCase() === author.toLowerCase()
+        );
+
+        if (matchingBooks.length > 0) {
+            resolve(res.send(JSON.stringify(matchingBooks, null, 4)));
+        } else {
+            reject(res.status(404).json({ message: "No books found for this author." }));
+        }
+    });
+
+    get_books_by_author.then(() =>
+        console.log(`Promise for Task 12 resolved for author ${author}`)
+    );
+});
+
+
+// Task 13
+public_users.get('/books/title/:title', function (req, res) {
+    const title = req.params.title;
+    const get_books_by_title = new Promise((resolve, reject) => {
+        const matchingBooks = Object.values(books).filter(book =>
+            book.title.toLowerCase() === title.toLowerCase()
+        );
+
+        if (matchingBooks.length > 0) {
+            resolve(res.send(JSON.stringify(matchingBooks, null, 4)));
+        } else {
+            reject(res.status(404).json({ message: "No books found with this title." }));
+        }
+    });
+
+    get_books_by_title.then(() =>
+        console.log(`Promise for Task 13 resolved for title ${title}`)
+    );
+});
+
 
 
 
@@ -78,6 +103,9 @@ public_users.post("/register", (req, res) => {
 public_users.get('/', function (req, res) {
     return res.status(200).json(Object.values(books));
 });
+
+
+
 
 
 
